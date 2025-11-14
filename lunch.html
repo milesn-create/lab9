@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Construct - Собрать ланч</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Food Construct</h1>
+            <nav>
+                <a href="index.html">О нас</a>
+                <a href="lunch.html" id="active">Собрать ланч</a>
+                <a href="order.html">Оформить заказ</a>
+                <a href="orders.html">Заказы</a>
+                <a href="#contacts">Контакты</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="lunch-container">
+
+   <section class="lunch-combos">
+    <h2>Доступные для заказа комбо</h2>
+
+    <div class="combos-grid">
+        <!-- Комбо 1 -->
+        <div class="combo-card">
+            <div class="combo-dish">
+                <img src="img/soup.png" alt="Суп">
+                <p>Суп</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/main-course-2.png" alt="Главное блюдо">
+                <p>Главное блюдо</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/salad.png" alt="Салат">
+                <p>Салат</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/drinks.png" alt="Напиток">
+                <p>Напиток</p>
+            </div>
+        </div>
+
+        <!-- Комбо 2 -->
+        <div class="combo-card">
+            <div class="combo-dish">
+                <img src="img/soup.png" alt="Суп">
+                <p>Суп</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/main-course-2.png" alt="Главное блюдо">
+                <p>Главное блюдо</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/drinks.png" alt="Напиток">
+                <p>Напиток</p>
+            </div>
+        </div>
+
+        <!-- Комбо 3 -->
+        <div class="combo-card">
+            <div class="combo-dish">
+                <img src="img/soup.png" alt="Суп">
+                <p>Суп</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/salad.png" alt="Салат">
+                <p>Салат</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/drinks.png" alt="Напиток">
+                <p>Напиток</p>
+            </div>
+        </div>
+
+        <!-- Комбо 4 -->
+        <div class="combo-card">
+            <div class="combo-dish">
+                <img src="img/main-course-2.png" alt="Главное блюдо">
+                <p>Главное блюдо</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/salad.png" alt="Салат">
+                <p>Салат</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/drinks.png" alt="Напиток">
+                <p>Напиток</p>
+            </div>
+        </div>
+
+        <!-- Комбо 5 -->
+        <div class="combo-card">
+            <div class="combo-dish">
+                <img src="img/main-course-2.png" alt="Главное блюдо">
+                <p>Главное блюдо</p>
+            </div>
+            <div class="combo-dish">
+                <img src="img/drinks.png" alt="Напиток">
+                <p>Напиток</p>
+            </div>
+        </div>
+
+        <!-- Десерт -->
+        <div class="dessert-note">
+            <img src="img/dessert.png" alt="Десерт">
+            <p>Десерт</p>
+            <span>(Можно добавить к любому заказу)</span>
+        </div>
+    </div>
+</section>
+
+        <!-- Секция выбора блюд -->
+        <section class="dishes-section">
+            <!-- Супы -->
+            <div id="soup-section" class="category-section">
+                <h2>Выберите суп</h2>
+                <div class="filters" id="soup-filters">
+                    <button class="filter-btn active" data-kind="all">Все</button>
+                    <button class="filter-btn" data-kind="fish">рыбный</button>
+                    <button class="filter-btn" data-kind="meat">мясной</button>
+                    <button class="filter-btn" data-kind="veg">вегетарианский</button>
+                </div>
+                <div class="dishes-grid" id="soup-dishes"></div>
+            </div>
+
+            <!-- Главные блюда -->
+            <div id="main-section" class="category-section">
+                <h2>Выберите главное блюдо</h2>
+                <div class="filters" id="main-filters">
+                    <button class="filter-btn active" data-kind="all">Все</button>
+                    <button class="filter-btn" data-kind="fish">рыбное</button>
+                    <button class="filter-btn" data-kind="meat">мясное</button>
+                    <button class="filter-btn" data-kind="veg">вегетарианское</button>
+                </div>
+                <div class="dishes-grid" id="main-dishes"></div>
+            </div>
+
+            <!-- Салаты и стартеры -->
+            <div id="salad-section" class="category-section">
+                <h2>Выберите салат или стартер</h2>
+                <div class="filters" id="salad-filters">
+                    <button class="filter-btn active" data-kind="all">Все</button>
+                    <button class="filter-btn" data-kind="fish">рыбный</button>
+                    <button class="filter-btn" data-kind="meat">мясной</button>
+                    <button class="filter-btn" data-kind="veg">вегетарианский</button>
+                </div>
+                <div class="dishes-grid" id="salad-dishes"></div>
+            </div>
+
+            <!-- Напитки -->
+            <div id="drink-section" class="category-section">
+                <h2>Выберите напиток</h2>
+                <div class="filters" id="drink-filters">
+                    <button class="filter-btn active" data-kind="all">Все</button>
+                    <button class="filter-btn" data-kind="cold">холодный</button>
+                    <button class="filter-btn" data-kind="hot">горячий</button>
+                </div>
+                <div class="dishes-grid" id="drink-dishes"></div>
+            </div>
+
+            <!-- Десерты -->
+            <div id="dessert-section" class="category-section">
+                <h2>Выберите десерт</h2>
+                <div class="filters" id="dessert-filters">
+                    <button class="filter-btn active" data-kind="all">Все</button>
+                    <button class="filter-btn" data-kind="small">маленькая порция</button>
+                    <button class="filter-btn" data-kind="medium">средняя порция</button>
+                    <button class="filter-btn" data-kind="large">большая порция</button>
+                </div>
+                <div class="dishes-grid" id="dessert-dishes"></div>
+            </div>
+        </section>
+
+        <!-- Секция заказа (упрощенная, только для просмотра) -->
+        <section id="order-summary">
+            <h2>Текущий заказ</h2>
+            <div id="order-items"><div class="empty-order">Ничего не выбрано</div></div>
+            <div id="total-section" style="display:none;">
+                <hr>
+                <div class="total-price"><strong>Стоимость заказа:</strong><span id="total-price">0</span>₽</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Sticky панель для перехода к оформлению -->
+    <div id="sticky-order-panel" style="display: none;">
+        <div class="panel-content">
+            <div class="panel-total"><strong>Стоимость заказа:</strong> <span id="panel-total-price">0</span>₽</div>
+            <div class="panel-note" id="panel-note">Выберите подходящий комбо для оформления заказа</div>
+        </div>
+        <a href="order.html" class="checkout-button" id="checkout-button">Перейти к оформлению</a>
+    </div>
+    
+    <footer id="contacts">
+        <p>Позвонить нам: <a href="tel:+70000000000">+7-000-000-00-00</a></p>
+        <p>Email: <a href="mailto:info@foodconstruct.ru">info@foodconstruct.ru</a></p>
+        <p>© 2023 Food Construct. Все права защищены.</p>
+    </footer>
+
+    <!-- Подключаем скрипты -->
+    <script src="dishes.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

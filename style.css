@@ -1,0 +1,1088 @@
+/* ===== БАЗОВЫЕ СТИЛИ ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ===== ШАПКА САЙТА ===== */
+header {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+h1 {
+    color: #e74c3c;
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+/* ===== НАВИГАЦИЯ ===== */
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+    padding: 10px 20px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+nav a:hover {
+    color: #e74c3c;
+    background-color: #f9f2f2;
+    transform: translateY(-2px);
+}
+
+#active {
+    color: tomato;
+    background-color: #fff0f0;
+}
+
+/* ===== ОСНОВНОЕ СОДЕРЖИМОЕ ===== */
+main {
+    flex: 1;
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+section {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+h2 {
+    color: #e74c3c;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+p {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+/* ===== СЕКЦИЯ "О НАС" ===== */
+.about-content {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.about-image {
+    width: 500px;
+    height: 300px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* ===== СПИСОК ПРЕИМУЩЕСТВ ===== */
+.advantages-list {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.advantages-list li {
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 25px;
+    font-size: 1.1rem;
+}
+
+.advantages-list li:before {
+    content: "✓";
+    color: #27ae60;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+/* ===== ТАБЛИЦЫ ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: 700;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* ===== СЕТКА БЛЮД ===== */
+.dishes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.dish-card {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 35px;
+    cursor: pointer;
+    filter: drop-shadow(17px 19px 24px rgba(0, 0, 0, 0.13));
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.dish-card:hover {
+    border: 2px solid tomato;
+    transform: translateY(-5px);
+}
+
+.dish-card:hover button {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.dish-image {
+    width: 100%;
+    border-radius: 35px;
+    margin-bottom: 15px;
+}
+
+.dish-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.dish-name {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.dish-weight {
+    color: #777;
+    margin-bottom: 15px;
+}
+
+.add-button {
+    background-color: #f1eee9;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: auto;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+/* ===== ПОДВАЛ САЙТА ===== */
+footer {
+    background-color: black;
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    margin-top: auto;
+}
+
+footer a {
+    color: #e74c3c;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+.delivery-note {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.dish-card:hover .delivery-note {
+    color: #e74c3c;
+}
+
+/* ===== СТИЛИ ДЛЯ ФИЛЬТРОВ ===== */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #e74c3c;
+    background-color: white;
+    color: #e74c3c;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: #fff0f0;
+    transform: translateY(-2px);
+}
+
+.filter-btn.active {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* ===== СТИЛИ ДЛЯ ЛАБОРАТОРНОЙ РАБОТЫ 4 ===== */
+.lunch-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.category-section {
+    margin-bottom: 40px;
+}
+
+.dish-card.selected {
+    border: 2px solid #e74c3c;
+    background-color: #fff0f0;
+    transform: translateY(-5px);
+}
+
+.dish-card.selected .add-button {
+    background-color: #e74c3c;
+    color: white;
+}
+
+#order-summary {
+    background: #f9f9f9;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+}
+
+.order-item {
+    margin-bottom: 15px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #e74c3c;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.order-item strong {
+    color: #333;
+    font-size: 1.1em;
+}
+
+.empty-order {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 30px;
+    font-size: 1.1em;
+}
+
+.total-price {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #ddd;
+    color: #e74c3c;
+}
+
+/* === БЛОК "ДОСТУПНЫЕ ДЛЯ ЗАКАЗА КОМБО" === */
+.lunch-combos {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 40px 30px;
+    margin-bottom: 40px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.lunch-combos h2 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #e74c3c;
+    margin-bottom: 35px;
+}
+
+.combos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 50px 60px;
+    justify-items: center;
+    align-items: start;
+}
+
+.combo-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.combo-dish {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.combo-dish img {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.combo-dish img:hover {
+    transform: translateY(-5px) scale(1.05);
+}
+
+.combo-dish p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+}
+
+.dessert-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
+}
+
+.dessert-note img {
+    width: 60px;
+    height: 60px;
+}
+
+.dessert-note p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+}
+
+.dessert-note span {
+    font-size: 14px;
+    color: #555;
+    font-style: italic;
+}
+
+/* === СТИЛИ ДЛЯ СТРАНИЦЫ ОФОРМЛЕНИЯ ЗАКАЗА === */
+.order-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Верхняя секция - Состав заказа */
+.order-composition {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.order-composition h2 {
+    color: #e74c3c;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    text-align: left;
+}
+
+/* Сетка карточек как на странице lunch.html */
+.order-dishes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+/* Карточка блюда - такой же стиль как на lunch.html */
+.order-dish-card {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 35px;
+    filter: drop-shadow(17px 19px 24px rgba(0, 0, 0, 0.13));
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.order-dish-card:hover {
+    border: 2px solid tomato;
+    transform: translateY(-5px);
+}
+
+.order-dish-card .dish-image {
+    width: 100%;
+    border-radius: 35px;
+    margin-bottom: 15px;
+}
+
+.order-dish-card .dish-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.order-dish-card .dish-name {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.order-dish-card .dish-weight {
+    color: #777;
+    margin-bottom: 15px;
+}
+
+/* Кнопка удаления вместо добавления */
+.remove-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: auto;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.remove-button:hover {
+    background-color: #c0392b;
+}
+
+/* Нижняя секция - Оформление заказа */
+.order-checkout {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.order-checkout h2 {
+    color: #e74c3c;
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+    text-align: left;
+}
+
+/* Форма оформления заказа */
+.checkout-form {
+    width: 100%;
+}
+
+.form-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.order-summary-section h3,
+.customer-info-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #e74c3c;
+    padding-bottom: 10px;
+}
+
+/* Стили для формы */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.checkout-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.checkout-form input[type="text"],
+.checkout-form input[type="email"],
+.checkout-form input[type="tel"],
+.checkout-form input[type="time"],
+.checkout-form select,
+.checkout-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: 'Roboto', sans-serif;
+    transition: border-color 0.3s;
+}
+
+.checkout-form input:focus,
+.checkout-form select:focus,
+.checkout-form textarea:focus {
+    outline: none;
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.1);
+}
+
+.checkout-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.checkbox-group {
+    margin-bottom: 20px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: auto;
+}
+
+.radio-group {
+    margin-bottom: 15px;
+}
+
+.radio-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 8px;
+    width: auto;
+}
+
+.note {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.delivery-time-section {
+    margin-bottom: 20px;
+}
+
+.delivery-time-section > p {
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.reset-btn,
+.submit-btn {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.reset-btn {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.reset-btn:hover {
+    background: #e9ecef;
+}
+
+.submit-btn {
+    background: #e74c3c;
+    color: white;
+}
+
+.submit-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* === СТИЛИ ДЛЯ СООБЩЕНИЙ === */
+.empty-order-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    grid-column: 1 / -1;
+}
+
+.empty-order-message a {
+    color: #e74c3c;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.empty-order-message a:hover {
+    text-decoration: underline;
+}
+
+.combo-message {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    color: #856404;
+}
+
+.combo-message a {
+    color: #e74c3c;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.combo-message a:hover {
+    text-decoration: underline;
+}
+
+/* === АДАПТИВНОСТЬ === */
+@media (max-width: 1200px) {
+    .form-columns {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+@media (max-width: 800px) {
+    .order-dishes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .order-container {
+        padding: 15px;
+    }
+    
+    .order-composition,
+    .order-checkout {
+        padding: 20px;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 600px) {
+    .order-dishes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .order-dish-card {
+        padding: 20px 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .order-dish-card {
+        padding: 20px;
+    }
+}
+/* === STICKY PANEL ДЛЯ ПЕРЕХОДА К ОФОРМЛЕНИЮ === */
+#sticky-order-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border: 2px solid #e74c3c;
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    max-width: 90%;
+    width: 600px;
+}
+
+.panel-content {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.panel-total {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.panel-note {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.checkout-button {
+    background: #e74c3c;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+}
+
+.checkout-button:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.checkout-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.checkout-button.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Адаптивность для sticky панели */
+@media (max-width: 768px) {
+    #sticky-order-panel {
+        width: 95%;
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .panel-content {
+        margin-right: 0;
+    }
+    
+    .checkout-button {
+        width: 100%;
+    }
+}
+/* === СТИЛИ ДЛЯ СТРАНИЦЫ ИСТОРИИ ЗАКАЗОВ === */
+
+.orders-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.orders-table th {
+    background-color: #e74c3c;
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.orders-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.orders-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.view-btn { color: #3498db; }
+.edit-btn { color: #f39c12; }
+.delete-btn { color: #e74c3c; }
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #c0392b;
+}
+
+.btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.order-details-section {
+    margin-bottom: 20px;
+}
+
+.order-details-section h4 {
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.order-items-list {
+    list-style: none;
+    padding: 0;
+}
+
+.order-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    z-index: 1001;
+    display: none;
+}
+
+.notification.success {
+    background-color: #27ae60;
+}
+
+.notification.error {
+    background-color: #e74c3c;
+}
+
+/* Адаптивность для таблицы заказов */
+@media (max-width: 768px) {
+    .orders-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+}
