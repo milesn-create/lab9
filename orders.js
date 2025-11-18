@@ -1,267 +1,477 @@
-// Данные заказов (будут загружаться из localStorage)
-let orders = [];
+// Глобальная переменная для хранения данных о блюдах
+let dishesData = null;
 
-// Переменные для хранения текущего редактируемого/удаляемого заказа
+// ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ДАННЫХ О БЛЮДАХ ИЗ API
+async function ensureDishesLoaded() {
+    if (dishesData) return dishesData;
+
+    // ЗАПРОС К API ДЛЯ ПОЛУЧЕНИЯ СПИСКА ВСЕХ БЛЮД
+    const response = await fetch('https://edu.std-900.ist.mospolytech.ru/labs/api/dishes');
+    dishesData = await response.json();
+    return dishesData;
+}
+
+// URL API ДЛЯ РАБОТЫ С ЗАКАЗАМИ И КЛЮЧ АВТОРИЗАЦИИ
+const API_URL = 'https://edu.std-900.ist.mospolytech.ru/labs/api/orders';
+const API_KEY = 'fdb746ba-4802-46af-9f21-10ccd05a1b63';
+
 let currentOrderId = null;
 
-// Функция для загрузки заказов из localStorage
-function loadOrdersFromStorage() {
-    const savedOrders = localStorage.getItem('foodConstructOrders');
-    if (savedOrders) {
-        orders = JSON.parse(savedOrders);
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventListeners();
+    loadOrders(); // ЗАГРУЗКА ЗАКАЗОВ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
+});
+
+function initializeEventListeners() {
+    // Элементы модалок
+    const viewModal = document.getElementById('orderDetailsModal');
+    const editModal = document.getElementById('editOrderModal');
+    const deleteModal = document.getElementById('deleteOrderModal');
+
+    const closeButtons = document.querySelectorAll('.close-btn');
+    const okButton = document.getElementById('closeDetailsBtn');
+    const cancelButton = document.getElementById('cancelEditBtn');
+    const deleteCancelButton = document.getElementById('cancelDeleteBtn');
+    const saveButton = document.getElementById('saveOrderBtn');
+    const deleteConfirmButton = document.getElementById('confirmDeleteBtn');
+
+    // Обработчики закрытия модалок
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (viewModal) viewModal.style.display = 'none';
+            if (editModal) editModal.style.display = 'none';
+            if (deleteModal) deleteModal.style.display = 'none';
+        });
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === viewModal) viewModal.style.display = 'none';
+        if (e.target === editModal) editModal.style.display = 'none';
+        if (e.target === deleteModal) deleteModal.style.display = 'none';
+    });
+
+    if (okButton) okButton.addEventListener('click', () => {
+        if (viewModal) viewModal.style.display = 'none';
+    });
+
+    if (cancelButton) cancelButton.addEventListener('click', () => {
+        if (editModal) editModal.style.display = 'none'; // ЗДЕСЬ ДОЛЖНО ЗАКРЫВАТЬСЯ ОКНО РЕДАКТИРОВАНИЯ
+    });
+
+    if (deleteCancelButton) deleteCancelButton.addEventListener('click', () => {
+        if (deleteModal) deleteModal.style.display = 'none';
+    });
+
+    if (saveButton) saveButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        saveEditedOrder();
+    });
+
+    if (deleteConfirmButton) deleteConfirmButton.addEventListener('click', () => {
+        deleteSelectedOrder();
+    });
+
+    // Обработчик изменения типа доставки
+    const editDeliveryTypeSelect = document.getElementById('editDeliveryType');
+    const editDeliveryTimeContainer = document.getElementById('editDeliveryTimeContainer');
+    
+    if (editDeliveryTypeSelect && editDeliveryTimeContainer) {
+        editDeliveryTypeSelect.addEventListener('change', function() {
+            if (this.value === 'time') {
+                editDeliveryTimeContainer.style.display = 'block';
+            } else {
+                editDeliveryTimeContainer.style.display = 'none';
+            }
+        });
     }
 }
 
-// Функция для сохранения заказов в localStorage
-function saveOrdersToStorage() {
-    localStorage.setItem('foodConstructOrders', JSON.stringify(orders));
-}
-
-// Функция для форматирования даты
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return `${date.toLocaleDateString('ru-RU')} ${date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}`;
-}
-
-// Функция для отображения заказов в таблице
-function renderOrders() {
-    const tableBody = document.getElementById('ordersTableBody');
-    tableBody.innerHTML = '';
+// ОСНОВНАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ЗАКАЗОВ ИЗ API
+async function loadOrders() {
+    const ordersTableBody = document.getElementById('ordersTableBody');
+    if (!ordersTableBody) return;
     
-    if (orders.length === 0) {
-        tableBody.innerHTML = `
+    ordersTableBody.innerHTML = '<tr><td colspan="6" class="loading">Загрузка заказов...</td></tr>';
+
+    try {
+        // GET ЗАПРОС К API ДЛЯ ПОЛУЧЕНИЯ ВСЕХ ЗАКАЗОВ ПОЛЬЗОВАТЕЛЯ
+        const response = await fetch(`${API_URL}?api_key=${API_KEY}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const orders = await response.json();
+
+        // Сортируем по дате (новые — вверху)
+        orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        if (orders.length === 0) {
+            ordersTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 30px;">
+                        У вас пока нет заказов.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        // ЗАГРУЗКА ДАННЫХ О БЛЮДАХ ИЗ API ДЛЯ ОТОБРАЖЕНИЯ НАЗВАНИЙ И ЦЕН
+        const dishesResponse = await fetch('https://edu.std-900.ist.mospolytech.ru/labs/api/dishes');
+        const allDishes = await dishesResponse.json();
+        const dishMap = {};
+        allDishes.forEach(dish => {
+            dishMap[dish.id] = dish.name;
+            dishMap[dish.id + '_price'] = dish.price;
+        });
+
+        let html = '';
+        orders.forEach((order, index) => {
+            const orderNumber = index + 1;
+            const date = new Date(order.created_at).toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // СОСТАВ ЗАКАЗА - ИСПОЛЬЗУЕМ ID БЛЮД ИЗ API ДЛЯ ПОЛУЧЕНИЯ НАЗВАНИЙ
+            const items = [];
+            if (order.soup_id && dishMap[order.soup_id]) items.push(dishMap[order.soup_id]);
+            if (order.main_course_id && dishMap[order.main_course_id]) items.push(dishMap[order.main_course_id]);
+            if (order.salad_id && dishMap[order.salad_id]) items.push(dishMap[order.salad_id]);
+            if (order.drink_id && dishMap[order.drink_id]) items.push(dishMap[order.drink_id]);
+            if (order.dessert_id && dishMap[order.dessert_id]) items.push(dishMap[order.dessert_id]);
+
+            const composition = items.join(', ');
+
+            // Время доставки
+            let deliveryTime = 'Как можно скорее (с 07:00 до 23:00)';
+            if (order.delivery_type === 'by_time' && order.delivery_time) {
+                deliveryTime = order.delivery_time;
+            }
+
+            // СТОИМОСТЬ - РАССЧИТЫВАЕМ НА ОСНОВЕ ЦЕН ИЗ API
+            let total = 0;
+            [order.soup_id, order.main_course_id, order.salad_id, order.drink_id, order.dessert_id].forEach(id => {
+                if (id && dishMap[id + '_price']) {
+                    total += dishMap[id + '_price'];
+                }
+            });
+
+            html += `
+                <tr>
+                    <td>${orderNumber}</td>
+                    <td>${date}</td>
+                    <td>${composition}</td>
+                    <td>${total}₽</td>
+                    <td>${deliveryTime}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view-btn" data-order-id="${order.id}" title="Подробнее">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="action-btn edit-btn" data-order-id="${order.id}" title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="action-btn delete-btn" data-order-id="${order.id}" title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+        ordersTableBody.innerHTML = html;
+
+        // Добавляем обработчики событий для кнопок действий
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const orderId = parseInt(e.currentTarget.getAttribute('data-order-id'));
+                showOrderDetails(orderId);
+            });
+        });
+        
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const orderId = parseInt(e.currentTarget.getAttribute('data-order-id'));
+                showEditOrder(orderId);
+            });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const orderId = parseInt(e.currentTarget.getAttribute('data-order-id'));
+                showDeleteOrder(orderId);
+            });
+        });
+
+    } catch (error) {
+        console.error('Ошибка загрузки заказов:', error);
+        ordersTableBody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
-                    У вас пока нет заказов. <a href="order.html">Оформите первый заказ</a>
+                <td colspan="6" style="text-align: center; padding: 30px; color: red;">
+                    Ошибка загрузки данных. Попробуйте позже.
                 </td>
             </tr>
         `;
-        return;
     }
-    
-    // Сортировка заказов по дате (сначала новые)
-    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    sortedOrders.forEach((order, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${formatDate(order.date)}</td>
-            <td>${order.items.join(', ')}</td>
-            <td>${order.cost}Р</td>
-            <td>${order.deliveryTime || 'Как можно скорее (с 7:00 до 23:00)'}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="action-btn view-btn" data-order-id="${order.id}" title="Подробнее">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="action-btn edit-btn" data-order-id="${order.id}" title="Редактировать">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="action-btn delete-btn" data-order-id="${order.id}" title="Удалить">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-    
-    // Добавляем обработчики событий для кнопок действий
-    document.querySelectorAll('.view-btn').forEach(btn => {
-        btn.addEventListener('click', showOrderDetails);
-    });
-    
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', showEditOrderForm);
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', showDeleteConfirmation);
-    });
 }
 
-// Функция для отображения деталей заказа
-function showOrderDetails(event) {
-    const orderId = parseInt(event.currentTarget.getAttribute('data-order-id'));
-    const order = orders.find(o => o.id === orderId);
-    
-    if (order) {
-        const modalContent = document.getElementById('orderDetailsContent');
-        modalContent.innerHTML = `
+// ФУНКЦИЯ ДЛЯ ПОКАЗА ДЕТАЛЕЙ КОНКРЕТНОГО ЗАКАЗА ИЗ API
+async function showOrderDetails(orderId) {
+    try {
+        // GET ЗАПРОС К API ДЛЯ ПОЛУЧЕНИЯ ДАННЫХ КОНКРЕТНОГО ЗАКАЗА
+        const orderRes = await fetch(`${API_URL}/${orderId}?api_key=${API_KEY}`);
+        const order = await orderRes.json();
+
+        // Гарантируем, что блюда загружены из API
+        await ensureDishesLoaded();
+
+        // Формируем состав заказа используя данные из API
+        const items = [];
+        if (order.soup_id) items.push({ label: 'Суп', id: order.soup_id });
+        if (order.main_course_id) items.push({ label: 'Главное блюдо', id: order.main_course_id });
+        if (order.salad_id) items.push({ label: 'Салат', id: order.salad_id });
+        if (order.drink_id) items.push({ label: 'Напиток', id: order.drink_id });
+        if (order.dessert_id) items.push({ label: 'Десерт', id: order.dessert_id });
+
+        let compositionHtml = '';
+        items.forEach(item => {
+            const name = getDishNameById(item.id); // ПОЛУЧАЕМ НАЗВАНИЕ БЛЮДА ИЗ API
+            const price = getDishPriceById(item.id); // ПОЛУЧАЕМ ЦЕНУ БЛЮДА ИЗ API
+            if (name) {
+                compositionHtml += `<div class="order-item"><strong>${item.label}:</strong> ${name} (${price}₽)</div>`;
+            }
+        });
+
+        // Форматируем дату
+        const date = new Date(order.created_at).toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const deliveryTimeText = order.delivery_type === 'by_time' && order.delivery_time
+            ? order.delivery_time
+            : 'Как можно скорее (с 07:00 до 23:00)';
+
+        const details = document.getElementById('orderDetailsContent');
+        details.innerHTML = `
             <div class="order-details-section">
                 <h4>Дата оформления</h4>
-                <p>${formatDate(order.date)}</p>
+                <p>${date}</p>
             </div>
-            
             <div class="order-details-section">
                 <h4>Доставка</h4>
-                <p><strong>Имя получателя:</strong> ${order.fullName}</p>
-                <p><strong>Адрес:</strong> ${order.deliveryAddress}</p>
-                <p><strong>Телефон:</strong> ${order.phone}</p>
-                <p><strong>Email:</strong> ${order.email}</p>
+                <p><strong>Имя получателя:</strong> ${escapeHtml(order.full_name)}</p>
+                <p><strong>Адрес:</strong> ${escapeHtml(order.delivery_address)}</p>
+                <p><strong>Телефон:</strong> ${escapeHtml(order.phone)}</p>
+                <p><strong>Email:</strong> ${escapeHtml(order.email)}</p>
+                <p><strong>Время доставки:</strong> ${escapeHtml(deliveryTimeText)}</p>
             </div>
-            
             ${order.comment ? `
             <div class="order-details-section">
                 <h4>Комментарий</h4>
-                <p>${order.comment}</p>
+                <p>${escapeHtml(order.comment)}</p>
             </div>
             ` : ''}
-            
             <div class="order-details-section">
                 <h4>Состав заказа</h4>
-                <ul class="order-items-list">
-                    ${order.items.map(item => `<li class="order-item">${item}</li>`).join('')}
-                </ul>
+                <div class="order-items-list">
+                    ${compositionHtml || '<div>—</div>'}
+                </div>
             </div>
-            
             <div class="order-details-section">
-                <h4>Стоимость: ${order.cost}Р</h4>
+                <h4>Стоимость: ${getTotalPrice(order)}₽</h4>
             </div>
         `;
-        
+
         document.getElementById('orderDetailsModal').style.display = 'block';
+    } catch (err) {
+        console.error('Ошибка при отображении деталей заказа:', err);
+        showNotification('Не удалось загрузить детали заказа.', 'error');
     }
 }
 
-// Функция для отображения формы редактирования заказа
-function showEditOrderForm(event) {
-    const orderId = parseInt(event.currentTarget.getAttribute('data-order-id'));
-    const order = orders.find(o => o.id === orderId);
+// ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ДАННЫХ ЗАКАЗА ИЗ API ДЛЯ РЕДАКТИРОВАНИЯ
+function showEditOrder(orderId) {
+    currentOrderId = orderId;
     
-    if (order) {
-        currentOrderId = orderId;
-        
-        // Заполняем форму данными заказа
-        document.getElementById('editFullName').value = order.fullName;
-        document.getElementById('editEmail').value = order.email;
-        document.getElementById('editPhone').value = order.phone;
-        document.getElementById('editAddress').value = order.deliveryAddress;
-        document.getElementById('editDeliveryType').value = order.deliveryType;
-        document.getElementById('editComment').value = order.comment || '';
-        
-        // Настраиваем отображение поля времени доставки
-        const timeContainer = document.getElementById('editDeliveryTimeContainer');
-        if (order.deliveryType === 'time') {
-            timeContainer.style.display = 'block';
-            document.getElementById('editDeliveryTime').value = order.deliveryTime || '';
-        } else {
-            timeContainer.style.display = 'none';
-        }
-        
-        document.getElementById('editOrderModal').style.display = 'block';
-    }
+    // GET ЗАПРОС К API ДЛЯ ПОЛУЧЕНИЯ ДАННЫХ ЗАКАЗА ДЛЯ РЕДАКТИРОВАНИЯ
+    fetch(`${API_URL}/${orderId}?api_key=${API_KEY}`)
+        .then(res => res.json())
+        .then(order => {
+            const editFullNameInput = document.getElementById('editFullName');
+            const editDeliveryAddressInput = document.getElementById('editAddress');
+            const editPhoneInput = document.getElementById('editPhone');
+            const editEmailInput = document.getElementById('editEmail');
+            const editCommentInput = document.getElementById('editComment');
+            const editDeliveryTypeSelect = document.getElementById('editDeliveryType');
+            const editDeliveryTimeInput = document.getElementById('editDeliveryTime');
+            const editDeliveryTimeContainer = document.getElementById('editDeliveryTimeContainer');
+
+            if (editFullNameInput) editFullNameInput.value = order.full_name || '';
+            if (editDeliveryAddressInput) editDeliveryAddressInput.value = order.delivery_address || '';
+            if (editPhoneInput) editPhoneInput.value = order.phone || '';
+            if (editEmailInput) editEmailInput.value = order.email || '';
+            if (editCommentInput) editCommentInput.value = order.comment || '';
+
+            // Время доставки - используем данные из API
+            if (editDeliveryTypeSelect) {
+                if (order.delivery_type === 'now') {
+                    editDeliveryTypeSelect.value = 'asap';
+                    if (editDeliveryTimeContainer) editDeliveryTimeContainer.style.display = 'none';
+                } else if (order.delivery_type === 'by_time') {
+                    editDeliveryTypeSelect.value = 'time';
+                    if (editDeliveryTimeContainer) editDeliveryTimeContainer.style.display = 'block';
+                    if (editDeliveryTimeInput) editDeliveryTimeInput.value = order.delivery_time || '';
+                }
+            }
+
+            document.getElementById('editOrderModal').style.display = 'block'; // ОТКРЫВАЕМ ОКНО РЕДАКТИРОВАНИЯ
+        })
+        .catch(err => {
+            console.error('Ошибка при загрузке заказа для редактирования:', err);
+            showNotification('Не удалось загрузить данные заказа для редактирования.', 'error');
+        });
 }
 
-// Функция для отображения подтверждения удаления
-function showDeleteConfirmation(event) {
-    const orderId = parseInt(event.currentTarget.getAttribute('data-order-id'));
+function showDeleteOrder(orderId) {
     currentOrderId = orderId;
     document.getElementById('deleteOrderModal').style.display = 'block';
 }
 
-// Функция для сохранения изменений заказа
-function saveOrderChanges() {
-    const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-    
-    if (orderIndex !== -1) {
-        orders[orderIndex] = {
-            ...orders[orderIndex],
-            fullName: document.getElementById('editFullName').value,
-            email: document.getElementById('editEmail').value,
-            phone: document.getElementById('editPhone').value,
-            deliveryAddress: document.getElementById('editAddress').value,
-            deliveryType: document.getElementById('editDeliveryType').value,
-            deliveryTime: document.getElementById('editDeliveryType').value === 'time' ? 
-                         document.getElementById('editDeliveryTime').value : null,
-            comment: document.getElementById('editComment').value
-        };
-        
-        saveOrdersToStorage();
-        renderOrders();
-        showNotification('Заказ успешно изменён', 'success');
-        closeEditModal();
+// ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ЗАКАЗА ЧЕРЕЗ API
+function deleteSelectedOrder() {
+    // DELETE ЗАПРОС К API ДЛЯ УДАЛЕНИЯ ЗАКАЗА
+    fetch(`${API_URL}/${currentOrderId}?api_key=${API_KEY}`, {
+        method: 'DELETE'
+    })
+        .then(res => {
+            if (res.ok) {
+                showNotification('Заказ успешно удалён.', 'success');
+                document.getElementById('deleteOrderModal').style.display = 'none'; // ЗАКРЫВАЕМ ОКНО УДАЛЕНИЯ
+                loadOrders(); // ПЕРЕЗАГРУЖАЕМ СПИСОК ЗАКАЗОВ ИЗ API
+            } else {
+                return res.json().then(data => {
+                    throw new Error(data.error || `Ошибка ${res.status}`);
+                });
+            }
+        })
+        .catch(err => {
+            showNotification(`Ошибка при удалении заказа: ${err.message}`, 'error');
+        });
+}
+
+// ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ ИЗМЕНЕНИЙ ЗАКАЗА ЧЕРЕЗ API
+function saveEditedOrder() {
+    const editFullNameInput = document.getElementById('editFullName');
+    const editDeliveryAddressInput = document.getElementById('editAddress');
+    const editPhoneInput = document.getElementById('editPhone');
+    const editEmailInput = document.getElementById('editEmail');
+    const editCommentInput = document.getElementById('editComment');
+    const editDeliveryTypeSelect = document.getElementById('editDeliveryType');
+    const editDeliveryTimeInput = document.getElementById('editDeliveryTime');
+
+    const data = {
+        full_name: editFullNameInput ? editFullNameInput.value.trim() : '',
+        email: editEmailInput ? editEmailInput.value.trim() : '',
+        phone: editPhoneInput ? editPhoneInput.value.trim() : '',
+        delivery_address: editDeliveryAddressInput ? editDeliveryAddressInput.value.trim() : '',
+        delivery_type: editDeliveryTypeSelect && editDeliveryTypeSelect.value === 'time' ? 'by_time' : 'now',
+        delivery_time: editDeliveryTypeSelect && editDeliveryTypeSelect.value === 'time' && editDeliveryTimeInput ? editDeliveryTimeInput.value : null,
+        comment: editCommentInput ? editCommentInput.value.trim() : ''
+    };
+
+    // Валидация
+    if (!data.full_name || !data.email || !data.phone || !data.delivery_address) {
+        showNotification('Заполните все обязательные поля.', 'error');
+        return;
     }
+
+    if (data.delivery_type === 'by_time' && !data.delivery_time) {
+        showNotification('Укажите время доставки.', 'error');
+        return;
+    }
+
+    // PUT ЗАПРОС К API ДЛЯ ОБНОВЛЕНИЯ ДАННЫХ ЗАКАЗА
+    fetch(`${API_URL}/${currentOrderId}?api_key=${API_KEY}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+        .then(res => {
+            if (res.ok) {
+                showNotification('Заказ успешно изменён.', 'success');
+                document.getElementById('editOrderModal').style.display = 'none'; // ЗДЕСЬ ЗАКРЫВАЕТСЯ ОКНО РЕДАКТИРОВАНИЯ ПОСЛЕ УСПЕШНОГО СОХРАНЕНИЯ
+                loadOrders(); // ПЕРЕЗАГРУЖАЕМ СПИСОК ЗАКАЗОВ ИЗ API
+            } else {
+                return res.json().then(data => {
+                    throw new Error(data.error || `Ошибка ${res.status}`);
+                });
+            }
+        })
+        .catch(err => {
+            showNotification(`Ошибка при сохранении изменений: ${err.message}`, 'error');
+        });
 }
 
-// Функция для удаления заказа
-function deleteOrder() {
-    orders = orders.filter(o => o.id !== currentOrderId);
-    saveOrdersToStorage();
-    renderOrders();
-    showNotification('Заказ успешно удалён', 'success');
-    closeDeleteModal();
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ДАННЫМИ ИЗ API
+
+// ПОЛУЧЕНИЕ НАЗВАНИЯ БЛЮДА ПО ID ИЗ ДАННЫХ API
+function getDishNameById(id) {
+    if (!dishesData) return '';
+    const dish = dishesData.find(d => d.id === id);
+    return dish ? dish.name : '';
 }
 
-// Функции для закрытия модальных окон
-function closeDetailsModal() {
-    document.getElementById('orderDetailsModal').style.display = 'none';
+// ПОЛУЧЕНИЕ ЦЕНЫ БЛЮДА ПО ID ИЗ ДАННЫХ API
+function getDishPriceById(id) {
+    if (!dishesData) return 0;
+    const dish = dishesData.find(d => d.id === id);
+    return dish ? dish.price : 0;
 }
 
-function closeEditModal() {
-    document.getElementById('editOrderModal').style.display = 'none';
-    currentOrderId = null;
+// РАСЧЕТ ОБЩЕЙ СТОИМОСТИ ЗАКАЗА НА ОСНОВЕ ЦЕН ИЗ API
+function getTotalPrice(order) {
+    if (!dishesData) return 0;
+    let total = 0;
+    [order.soup_id, order.main_course_id, order.salad_id, order.drink_id, order.dessert_id]
+        .filter(id => id)
+        .forEach(id => {
+            const dish = dishesData.find(d => d.id === id);
+            if (dish) total += dish.price;
+        });
+    return total;
 }
 
-function closeDeleteModal() {
-    document.getElementById('deleteOrderModal').style.display = 'none';
-    currentOrderId = null;
+function escapeHtml(text) {
+    if (typeof text !== 'string') return text;
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
-// Функция для показа уведомлений
 function showNotification(message, type) {
     const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    notification.style.display = 'block';
-    
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 3000);
+    if (notification) {
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
 }
-
-// Обработчики событий для модальных окон
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация - загружаем заказы из localStorage
-    loadOrdersFromStorage();
-    renderOrders();
-    
-    // Обработчики закрытия модальных окон
-    document.querySelectorAll('.close-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            closeDetailsModal();
-            closeEditModal();
-            closeDeleteModal();
-        });
-    });
-    
-    // Обработчики для кнопок действий
-    document.getElementById('closeDetailsBtn').addEventListener('click', closeDetailsModal);
-    document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
-    document.getElementById('saveOrderBtn').addEventListener('click', saveOrderChanges);
-    document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
-    document.getElementById('confirmDeleteBtn').addEventListener('click', deleteOrder);
-    
-    // Обработка изменения типа доставки в форме редактирования
-    document.getElementById('editDeliveryType').addEventListener('change', function() {
-        const timeContainer = document.getElementById('editDeliveryTimeContainer');
-        if (this.value === 'time') {
-            timeContainer.style.display = 'block';
-        } else {
-            timeContainer.style.display = 'none';
-        }
-    });
-    
-    // Закрытие модальных окон при клике вне их
-    window.addEventListener('click', function(event) {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            if (event.target === modal) {
-                closeDetailsModal();
-                closeEditModal();
-                closeDeleteModal();
-            }
-        });
-    });
-});

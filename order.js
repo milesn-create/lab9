@@ -4,10 +4,11 @@ let dishesData = [];
 // Загрузка данных блюд
 async function loadDishesForOrder() {
     try {
-        const response = await fetch('https://edu.std-900.ist.mospolytech.ru/labs/api/dishes?key=fdb746ba-4802-46af-9f21-10ccd05a1b63');
+        const response = await fetch('https://edu.std-900.ist.mospolytech.ru/labs/api/dishes?api_key=fdb746ba-4802-46af-9f21-10ccd05a1b63');
         
         if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
         }
         
         const dishes = await response.json();
@@ -38,7 +39,7 @@ function loadAndDisplayOrder() {
             if (dish.category === 'main-course') normalizedCategory = 'main';
             if (dish.category === 'first-course') normalizedCategory = 'soup';
             
-            currentOrder[normalizedCategory] = dish; // ИСПРАВЛЕНА ОПЕЧАТКА
+            currentOrder[normalizedCategory] = dish;
         }
     }
 
@@ -214,11 +215,39 @@ function validateOrderComposition() {
     return combo1 || combo2 || combo3 || combo4 || combo5;
 }
 
-// Обработка отправки формы через FETCH
-document.getElementById('orderForm').addEventListener('submit', async function(e) {
-    e.preventDefault(); // Предотвращаем стандартную отправку
+// Подготовка данных для API
+function prepareOrderData(formDataObject, currentOrder) {
+    let delivery_type = 'now';
+    let delivery_time = null;
     
-    // Проверяем состав заказа
+    if (formDataObject['delivery-option'] === 'by-time') {
+        delivery_type = 'by_time';
+        delivery_time = formDataObject['exact-time'];
+    }
+    
+    const subscribe = formDataObject.discounts === 'on' ? 1 : 0;
+    
+    return {
+        full_name: formDataObject.name,
+        email: formDataObject.email,
+        subscribe: subscribe,
+        phone: formDataObject.phone,
+        delivery_address: formDataObject.address,
+        delivery_type: delivery_type,
+        delivery_time: delivery_time,
+        comment: formDataObject.comment || '',
+        soup_id: currentOrder.soup?.id || null,
+        main_course_id: currentOrder.main?.id || null,
+        salad_id: currentOrder.salad?.id || null,
+        drink_id: currentOrder.drink?.id,
+        dessert_id: currentOrder.dessert?.id || null
+    };
+}
+
+// Обработка отправки формы через FETCH на правильный API
+document.getElementById('orderForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
     if (!validateOrderComposition()) {
         showError('Состав заказа не соответствует доступным комбо. Перейдите на страницу "Собрать ланч" чтобы изменить выбор блюд.');
         return;
@@ -230,99 +259,49 @@ document.getElementById('orderForm').addEventListener('submit', async function(e
         submitButton.textContent = 'Отправка...';
         submitButton.disabled = true;
 
-        // Собираем данные формы
         const formData = new FormData(this);
-        const formDataObject = {};
-        for (let [key, value] of formData.entries()) {
-            formDataObject[key] = value;
+        const formDataObject = Object.fromEntries(formData.entries());
+
+        const orderData = prepareOrderData(formDataObject, currentOrder);
+
+        console.log('Отправляемые данные:', orderData);
+
+        // Отправка на правильный API с вашим ключом
+        const response = await fetch('https://edu.std-900.ist.mospolytech.ru/labs/api/orders?api_key=fdb746ba-4802-46af-9f21-10ccd05a1b63', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Ошибка HTTP: ${response.status}`);
         }
-
-        // Добавляем информацию о блюдах
-        const dishesInfo = {};
-        for (const [category, dish] of Object.entries(currentOrder)) {
-            if (dish) {
-                dishesInfo[category] = {
-                    name: dish.name,
-                    price: dish.price,
-                    id: dish.id
-                };
-            }
-        }
-        formDataObject.dishes = dishesInfo;
-
-        // СОХРАНЕНИЕ ЗАКАЗА В ИСТОРИЮ
-        const orderItems = Object.values(currentOrder).filter(dish => dish).map(dish => dish.name);
-        const orderCost = Object.values(currentOrder).reduce((sum, dish) => sum + (dish ? dish.price : 0), 0);
-
-        const orderData = {
-            id: Date.now(),
-            date: new Date().toISOString(),
-            items: orderItems,
-            cost: orderCost,
-            deliveryTime: formDataObject['delivery-option'] === 'by-time' ? formDataObject['exact-time'] : null,
-            fullName: formDataObject.name,
-            email: formDataObject.email,
-            phone: formDataObject.phone,
-            deliveryAddress: formDataObject.address,
-            deliveryType: formDataObject['delivery-option'],
-            comment: formDataObject.comment || ''
-        };
-
-        // Сохраняем в историю заказов
-        const savedOrders = JSON.parse(localStorage.getItem('foodConstructOrders') || '[]');
-        savedOrders.push(orderData);
-        localStorage.setItem('foodConstructOrders', JSON.stringify(savedOrders));
-
-        console.log('Отправляемые данные:', formDataObject);
-
-        // Создаем временную форму для отправки в новом окне
-        const tempForm = document.createElement('form');
-        tempForm.method = 'POST';
-        tempForm.action = 'https://httpbin.org/post';
-        tempForm.target = '_blank'; // Открыть в новом окне
-        tempForm.style.display = 'none';
-
-        // Добавляем все данные формы
-        for (const [key, value] of Object.entries(formDataObject)) {
-            if (typeof value === 'object') {
-                // Для объектов сериализуем в JSON
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = JSON.stringify(value);
-                tempForm.appendChild(input);
-            } else {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                tempForm.appendChild(input);
-            }
-        }
-
-        // Добавляем форму в документ и отправляем
-        document.body.appendChild(tempForm);
-        tempForm.submit();
-
-        // Убираем форму после отправки
-        setTimeout(() => {
-            document.body.removeChild(tempForm);
-        }, 1000);
-
-        // Показываем сообщение об успехе
-        showSuccess('Заказ отправлен! Открывается страница с данными запроса...');
+        
+        const result = await response.json();
+        
+        showSuccess('Заказ успешно оформлен!');
         localStorage.removeItem('foodConstructOrder');
         
-        // Перенаправляем на главную через 3 секунды
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 3000);
 
     } catch (error) {
         console.error('Ошибка оформления заказа:', error);
-        showError('Ошибка при отправке заказа: ' + error.message);
         
-        // Восстанавливаем кнопку
+        // Более подробное сообщение об ошибке
+        let errorMessage = 'Ошибка при отправке заказа: ';
+        if (error.message.includes('Load failed') || error.message.includes('Failed to fetch')) {
+            errorMessage += 'Не удалось подключиться к серверу. Проверьте интернет-соединение.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        showError(errorMessage);
+        
         const submitButton = this.querySelector('.submit-btn');
         submitButton.textContent = 'Отправить заказ';
         submitButton.disabled = false;
@@ -336,7 +315,6 @@ function setupForm() {
         const selects = form.querySelectorAll('select');
         selects.forEach(sel => sel.setAttribute('disabled', true));
 
-        // Обработка времени доставки
         const deliveryTimeRadio = document.querySelectorAll('input[name="delivery-option"]');
         const deliveryTimeInput = document.getElementById('exact-time');
         const deliveryTimeGroup = document.getElementById('delivery-time-group');
@@ -354,7 +332,6 @@ function setupForm() {
             });
         });
 
-        // Сброс выбора
         form.addEventListener('reset', () => {
             Object.keys(currentOrder).forEach(k => currentOrder[k] = null);
             localStorage.removeItem('foodConstructOrder');
